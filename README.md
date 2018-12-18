@@ -2,4 +2,4 @@
 
 Scripts with the new Powershell AZ Module
 
-* Hello World: Sample script to create a virtual machine within Azure
+* Create-VM: Sample "hello world" script to create a virtual machine within Azure
