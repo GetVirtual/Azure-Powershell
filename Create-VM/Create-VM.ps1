@@ -1,14 +1,11 @@
 # Vars
-$SubscriptionName = "Microsoft Azure Internal Consumption"
+$SubscriptionName = "Microsoft Azure Internal Consumption" #adjust to your Subscription Name
 $RGName = "AZ-RG"
 $Location = "West Europe"
 $VMName = "AZ-VM"
 
 # Connect to Azure with Device Login
 Connect-AzAccount
-
-# List Subscriptions
-Get-AzSubscription
 
 # Set Subscription Context
 Set-AzContext -SubscriptionName $SubscriptionName
@@ -24,7 +21,8 @@ New-AzVM -Name $VMName -ResourceGroupName $RGName -Location $Location -Credentia
 
 Write-Host "Public IP: " (Get-AzPublicIpAddress -ResourceGroupName $RGName -name ("PublicIP-" + $VMName)).IpAddress
 
-Read-Host "To continue with VM Cleanup process press the any key... (where is the any key?!) ... https://www.youtube.com/watch?v=st6-DgWeuos"
+# https://www.youtube.com/watch?v=st6-DgWeuos
+Read-Host "To continue with VM Cleanup process press the any key... (where is the any key?!)"
 
 Remove-AzResourceGroup -Name $RGName -Force:$true
 
