@@ -24,8 +24,6 @@ function New-VMEnvironment {
         $cVMName = $VMName + "-$i"
         Write-Host "Creating Azure virtual machine $cVMName as background job ..." -ForegroundColor Green
         
-        
-
         $PIP = New-AzPublicIpAddress -Name ("PublicIP-" + $cVMName) -ResourceGroupName $RGName -Location $Location -AllocationMethod Dynamic
         $NSGRule = New-AzNetworkSecurityRuleConfig -Name rdp-rule -Description "Allow RDP" -Access Allow -Protocol Tcp -Direction Inbound -Priority 100 -SourceAddressPrefix Internet -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 3389
         $NSG = New-AzNetworkSecurityGroup -Name ("NSG-" + $cVMName) -ResourceGroupName $RGName -Location $Location -SecurityRules $NSGRule
@@ -38,8 +36,6 @@ function New-VMEnvironment {
 
         $job = New-AzVM -VM $VirtualMachine -ResourceGroupName $RGName -Location $Location -asJob
         
-        ### POPULATE ARRAY WITH INFOS (VMName, PublicIP, JobID)
-
     }
 
     ### Check Jobs until finished
@@ -58,9 +54,6 @@ function New-VMEnvironment {
 
 ### Connect to Azure with Device Login
 Connect-AzAccount
-
-### List Subscriptions
-# Get-AzSubscription
 
 ### Set Subscription Context
 Set-AzContext -SubscriptionName $SubscriptionName
@@ -107,9 +100,3 @@ elseif ($RGCheck.count -eq 1) {
 else {
     Write-Host "Something went terribly wrong in the Azure universe..."
 }
-
-
-
-
-
-
