@@ -1,12 +1,20 @@
-### Vars
+### Global Vars
 $SubscriptionName = "Microsoft Azure Internal Consumption"
 $EnvironmentName = "MyTesting"
+
+### Naming Vars
 $RGName = "RG-" + $EnvironmentName
 $VMName = $EnvironmentName + "-VM"
+
+### VM Settings
 $VMSize = "Standard_B2ms"
 $Location = "West Europe"
 $username = "vmadmin"
 $password = "`$ecurity#123"
+$netprefix = "10.10.10.0/24"
+$sku = "2019-Datacenter"
+### Find out possible SKUs with
+# Get-AzVMImageSku -Location $Location -Publisher 'MicrosoftWindowsServer' -Offer "WindowsServer" | Select Skus
 
 ### Function
 function New-VMEnvironment {
@@ -16,8 +24,8 @@ function New-VMEnvironment {
     New-AzResourceGroup -name $RGName -location $Location
 
     Write-Host "Creating VNET: VNET-$EnvironmentName ..." -ForegroundColor Green
-    $subnet = New-AzVirtualNetworkSubnetConfig -Name default -AddressPrefix "10.10.10.0/24"
-    $vnet = New-AzVirtualNetwork -Name ("VNET-" + $EnvironmentName) -ResourceGroupName $RGName -location $Location -AddressPrefix "10.10.10.0/24" -Subnet $subnet
+    $subnet = New-AzVirtualNetworkSubnetConfig -Name default -AddressPrefix $netprefix
+    $vnet = New-AzVirtualNetwork -Name ("VNET-" + $EnvironmentName) -ResourceGroupName $RGName -location $Location -AddressPrefix $netprefix -Subnet $subnet
 
     for ($i=1; $i -le $vmcount; $i++)
     {
@@ -32,7 +40,7 @@ function New-VMEnvironment {
         $VirtualMachine = New-AzVMConfig -VMName $cVMName -VMSize $VMSize
         $VirtualMachine = Set-AzVMOperatingSystem -VM $VirtualMachine -Windows -ComputerName $cVMName -Credential $mycreds -ProvisionVMAgent -EnableAutoUpdate
         $VirtualMachine = Add-AzVMNetworkInterface -VM $VirtualMachine -Id $NIC.Id
-        $VirtualMachine = Set-AzVMSourceImage -VM $VirtualMachine -PublisherName 'MicrosoftWindowsServer' -Offer 'WindowsServer' -Skus '2016-Datacenter' -Version latest
+        $VirtualMachine = Set-AzVMSourceImage -VM $VirtualMachine -PublisherName 'MicrosoftWindowsServer' -Offer 'WindowsServer' -Skus $sku -Version latest
 
         $job = New-AzVM -VM $VirtualMachine -ResourceGroupName $RGName -Location $Location -asJob
         
