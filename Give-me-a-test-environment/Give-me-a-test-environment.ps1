@@ -80,17 +80,17 @@ function New-VMEnvironment {
         ######### REPLACE PWD!
 
         $documentName = "Azure - " + ($EnvironmentName)
-        $documentPath = Join-Path -Path ($PWD) -ChildPath ($documentName + '.rtsz')
+        $documentPath = Join-Path -Path ($PSScriptPath) -ChildPath ($documentName + '.rtsz')
         $royalDocument = New-RoyalDocument -Store $royalStore -Name $documentName -FileName $documentPath
 
         $folder = New-RoyalObject -Type RoyalFolder -Folder $royalDocument -Name $EnvironmentName -Description $EnvironmentName
         foreach ($arrayitem in $array)
         {
             $rds = New-RoyalObject -Type RoyalRDSConnection -Folder $folder -Name $arrayitem.VMName
-            Set-RoyalObjectValue -Object $rds -Property CredentialMode -Value 2 -OutVariable $bin
-            Set-RoyalObjectValue -Object $rds -Property CredentialUsername -Value $arrayitem.User -OutVariable $bin
-            Set-RoyalObjectValue -Object $rds -Property CredentialPassword -Value $arrayitem.Password -OutVariable $bin
-            Set-RoyalObjectValue -Object $rds -Property URI -Value $arrayitem.DNS -OutVariable $bin
+            $bin = Set-RoyalObjectValue -Object $rds -Property CredentialMode -Value 2
+            $bin = Set-RoyalObjectValue -Object $rds -Property CredentialUsername -Value $arrayitem.User
+            $bin = Set-RoyalObjectValue -Object $rds -Property CredentialPassword -Value $arrayitem.Password
+            $bin = Set-RoyalObjectValue -Object $rds -Property URI -Value $arrayitem.DNS
             
             #Get-RoyalPropertyHelp -PropertyName "CredentialMode" -Type RoyalRDSConnection
         }
@@ -110,7 +110,16 @@ function New-VMEnvironment {
 }
 
 ### Connect to Azure with Device Login
-Connect-AzAccount
+#Connect-AzAccount
+
+Try 
+{
+    $bin = Get-AzContext
+} 
+Catch 
+{
+    Connect-AzAccount
+}
 
 ### Set Subscription Context
 Set-AzContext -SubscriptionName $SubscriptionName
@@ -138,6 +147,10 @@ elseif ($RGCheck.count -eq 1) {
         Write-Host "Deleting Resource Group: $RGName ..." -ForegroundColor Red
         Remove-AzResourceGroup -Name $RGName -Force
 
+        if (Get-Variable royalts -ErrorAction 'Ignore') {
+            Remove-Item $PSScriptPath -Include *.rtsz -ErrorAction SilentlyContinue
+        }
+
         New-VMEnvironment
     }
     elseif (($answer -eq "D") -or ($answer -eq "d"))
@@ -145,6 +158,11 @@ elseif ($RGCheck.count -eq 1) {
         ### Path Delete
         Write-Host "Deleting Resource Group: $RGName ..." -ForegroundColor Red
         Remove-AzResourceGroup -Name $RGName -Force
+
+        if (Get-Variable royalts -ErrorAction 'Ignore') {
+            Remove-Item $PSScriptPath -Include *.rtsz -ErrorAction SilentlyContinue
+        }
+
         Write-Host "Completed!"
     }
     else
