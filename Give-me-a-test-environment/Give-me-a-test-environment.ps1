@@ -110,7 +110,7 @@ function New-VMEnvironment {
 }
 
 ### Connect to Azure with Device Login
-#Connect-AzAccount
+Connect-AzAccount
 
 ### Set Subscription Context
 Set-AzContext -SubscriptionName $SubscriptionName
