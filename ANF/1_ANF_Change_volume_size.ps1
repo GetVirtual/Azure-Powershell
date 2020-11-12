@@ -18,7 +18,7 @@ Dirk Ecker (Microsoft/NetApp)
 
 Param (
     [parameter(Mandatory=$true)][String]$SubscriptionId,
-    [parameter(Mandatory=$true)][Integer]$NewVolumeSizeGiB
+    [parameter(Mandatory=$true)][Int]$NewVolumeSizeGiB
 )
 
 # Variables
