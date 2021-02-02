@@ -1,10 +1,10 @@
 ﻿<# 
-Version: 1.0
-Date: 12.11.2020
+Version: 1.1
+Date: 02.02.2021
 
 Description:
 This script deploys an Azure NetApp Files sample environment.
-VNET, Subnet, Subnet delegation, ANF Account & Pool & Volume (NFS)
+VNET, Subnet, Subnet delegation, ANF Account & Pool & Volume (NFSv3)
 Just state the target subscription ID as parameter and the deployment will use the defined variables.
 
 Required Modules:
@@ -14,6 +14,7 @@ Install-Module -Name Az.NetAppFiles -Force
 Authors:
 Jürgen Lobenz (Microsoft)
 Dirk Ecker (Microsoft/NetApp)
+Sebastian Brack (Microsoft/NetApp)
 #> 
  
 
@@ -21,7 +22,7 @@ Param (
     [parameter(Mandatory=$true)][String]$SubscriptionId
 )
 
-Write-Host "Connecting to Azure subscription $($SubscriptionId)."
+Write-Host "Connecting to Azure subscription $SubscriptionId."
 Connect-AzAccount -Subscription $SubscriptionId
 
 # Variables
@@ -36,16 +37,15 @@ $SubnetANFPrefix = "10.0.101.0/24"
 $ANFAccountName = "ANF-Account-PowerShell"
 
 $ANFPoolName = "ANF-Pool-PowerShell"
-$ANFPoolSizeTiB = 4 # Valid values are 4 to 500
 $ANFServiceLevel = "Standard" # Valid values are Standard, Premium and Ultra
+$ANFPoolSizeTiB = 4 # Valid values are 4 to 500
 $ANFPoolSizeBytes = $ANFPoolSizeTiB * 1024 * 1024 * 1024 * 1024
 
 $ANFVolumeName = "ANF-VolumeNFS-Powershell"
 $ANFVolumePath = "volume-nfs"
-$ANFVolumeProtocol = "NFSv3" # Valid values are CIFS, NFS
-$ANFVolumeSizeBytesGiB = 1024 # Valid values are 100 (100 GiB) to 102400 (100 TiB)
-$ANFVolumeSizeBytes = $ANFVolumeSizeBytesGiB * 1024 * 1024 * 1024
-
+$ANFVolumeProtocol = "NFSv3" # Valid values are "NFSv3", "NFSv4.1", "CIFS"
+$ANFVolumeSizeGiB = 1024 # Valid values are 100 (100 GiB) to 102400 (100 TiB)
+$ANFVolumeSizeBytes = $ANFVolumeSizeGiB * 1024 * 1024 * 1024
 
 # Create Ressource Group
 New-AzResourceGroup -Name $ResourceGroup -Location $Location
@@ -95,3 +95,14 @@ New-AzNetAppFilesVolume `
     -CreationToken $ANFVolumePath `
     -ServiceLevel $ANFServiceLevel `
     -ProtocolType $ANFVolumeProtocol
+
+# Get information how to access the newly created Azure NetApp Files Volume
+$vol = (Get-AzNetAppFilesVolume `
+    -ResourceGroupName $ResourceGroup `
+    -AccountName $ANFAccountName `
+    -PoolName $ANFPoolName `
+    -Name $ANFVolumeName)
+
+$ANFVolumeMountTarget = $vol.MountTargets.IpAddress + ":/" + $vol.CreationToken
+
+Write-Host "Azure NetApp Files volume can be mounted at $ANFVolumeMountTarget"
